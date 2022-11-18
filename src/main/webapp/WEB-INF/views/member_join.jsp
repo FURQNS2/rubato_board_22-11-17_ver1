@@ -21,7 +21,25 @@
     <header> <!-- header 시작 -->
       <a href="index"><img id="logo" src="${pageContext.request.contextPath}/resources/img/logo.png"></a>
       <nav id="top_menu">
-        HOME | LOGIN | JOIN | NOTICE
+        HOME | 
+     
+     <!-- 로그인과 비로그인 구분 -->   
+      <% if(sessionId == null){ %>  
+        LOGIN
+       <%}else{ %>
+       	<a href="logout">LOOUT</a>
+       <%} %>
+        
+         | 
+ 
+      <!-- 로그인 중에는 글수정이 뜨게 만들음 -->
+       <% if(sessionId == null){ %>	 
+         	JOIN 
+       <% }else{ %>
+       		MODIFY
+	   <% } %>     
+         
+         | NOTICE
       </nav>
       <nav id="main_menu">
         <ul>

@@ -8,17 +8,101 @@
 	<insert id="joinMember">
 		INSERT INTO rubamember(mid, mpw, mname, memail) VALUES (#{param1}, #{param2}, #{param3}, #{param4})
 	</insert>
+	
+	<!-- 로그인 아이디 맞는지 확인하기 -->
 	<select id="checkUserId" resultType="int">
 		SELECT COUNT(*) FROM rubamember WHERE mid=#{param1}
 	</select>
 	
+	<!-- 로그인 아이디와 비밀번호 여부 확인 -->
 	<select id="checkUserIdAndPw" resultType="int">
 		SELECT COUNT(*) FROM rubamember WHERE mid=#{param1} AND mpw=#{param2}
 	</select>
 	
+	<!-- 게시글 작성하기 -->
 	<insert id="rfbwrite">
 		INSERT INTO 
 			rubafreeboard(rfbnum, rfbname, rfbtitle, rfbcontent, rfbuserid, rfbhit, rfbreplycount) 
 		VALUES (rfb_seq.nextval, #{param1}, #{param2}, #{param3},#{param4}, 0, 0)
 	</insert>
+	
+	<!-- 글목록 내림차순 -->
+	<select id="rfblist" resultType="com.sycompany.rubato.dto.RFBoardDto">
+	 	SELECT * FROM rubafreeboard ORDER BY rfbnum DESC
+	</select>
+		
+	<!-- 전체 글의 개수 -->	
+	<select id="rfboardAllCount" resultType="int">
+		SELECT COUNT(*) FROM rubafreeboard
+	</select>
+	
+	<!-- 게시물 구경하기 -->
+	<select id="rfboardView" resultType="com.sycompany.rubato.dto.RFBoardDto">
+	 	SELECT * FROM rubafreeboard WHERE rfbnum=#{param1} 
+	</select>
+	
+	<delete id="delete">
+		DELETE FROM rubafreeboard WHERE rfbnum=#{param1}
+	</delete>
+	
+	<!-- 조회수 -->
+	<update id="rfbhit">
+ 		UPDATE rubafreeboard 
+ 			SET rfbhit=rfbhit+1 WHERE rfbnum=#{param1}
+ 	</update>
+ 	
+ 	<!-- 댓글 달기 -->
+ 	<insert id="rrwrite">
+ 		INSERT 
+ 			INTO rubareply(rrnum, rrorinum, rrid, rrcontent) 
+ 				VALUES (rr_seq.nextval, #{param1}, #{param2}, #{param3})
+ 	</insert>
+ 	
+ 	<select id="rrlist" resultType="com.sycompany.rubato.dto.RReplyDto">
+ 		SELECT * 
+ 			FROM rubareply 
+ 				WHERE rrorinum=#{param1}
+ 	</select>
+ 	
+ 	<!-- 댓글 등록 시 해당글의 댓글 갯수 증가하는 DB -->
+<!-- 
+ 	<update id="rrcount">
+ 		UPDATE rubafreeboard 
+ 			SET rfbreplycount=rfbreplycount+1 WHERE rfbnum=#{param1} 	
+ 	</update>
+ -->
+  	
+ 	<update id="rrcount">
+	CALL
+	DECLARE
+	BEGIN
+ 	UPDATE rubafreeboard 
+ 			SET rfbreplycount=(
+ 				SELECT COUNT(*) 
+ 					FROM rubareply 
+ 						WHERE rrorinum=#{param1}) 
+ 			WHERE rfbnum=#{param1};
+ 	END
+ 	</update>
+ 	
+ 	<!-- 댓글 삭제 -->
+ 	<delete id="rrdelete">
+ 		DELETE FROM rubareply WHERE rrorinum=#{param1} AND rrid=#{param2} AND rrnum=#{param3}
+ 	</delete>
+ 
+  	
+ 	<!-- 댓글 등록 시 해당글의 댓글 갯수 감소하는 DB -->
+<!-- 
+ 	<update id="rrcountMinus">
+ 		UPDATE rubafreeboard 
+ 			SET rfbreplycount=rfbreplycount-1 WHERE rfbnum=#{param1} 	
+ 	</update>
+ -->
+	
+	<!-- 게시판 검색 SQL -->
+	<select id="rfbSearchTitleList" resultType="com.sycompany.rubato.dto.RFBoardDto">
+		SELECT * FROM WHERE rfbtitle= LIKE '%' || #{param1} || '%' ORDER BY rfbnum DESC
+	</select>
+	
+	
 </mapper>

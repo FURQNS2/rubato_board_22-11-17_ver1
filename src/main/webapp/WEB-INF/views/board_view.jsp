@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +22,25 @@
     <header> <!-- header 시작 -->
       <a href="index"><img id="logo" src="${pageContext.request.contextPath}/resources/img/logo.png"></a>
       <nav id="top_menu">
-        HOME | LOGIN | JOIN | NOTICE
+        HOME | 
+     
+     <!-- 로그인과 비로그인 구분 -->   
+      <% if(sessionId == null){ %>  
+        LOGIN
+       <%}else{ %>
+       	<a href="logout">LOOUT</a>
+       <%} %>
+        
+         | 
+ 
+      <!-- 로그인 중에는 글수정이 뜨게 만들음 -->
+       <% if(sessionId == null){ %>	 
+         	JOIN 
+       <% }else{ %>
+       		MODIFY
+	   <% } %>     
+         
+         | NOTICE
       </nav>
       <nav id="main_menu">
         <ul>
@@ -80,27 +99,51 @@
       <section id="main">
         <img src="${pageContext.request.contextPath}/resources/img/comm.gif">
         <h2 id="board_title">자유게시판</h2>
+        
+        
         <div id="view_title_box">
-          <span id="boardTitle">까스통의 선물인 보드카가 정말 독하네요!!!</span>
-          <span id="info">루바토 | 조회수 : 208 | 2022-10-05 (09:21)</span>
-        </div>
+          <span id="boardTitle">${rfbView.rfbtitle}</span>
+          <span id="info">${rfbView.rfbname } | 조회수 : ${rfbView.rfbhit } | ${rfbView.rfbdate }</span>
+        </div>   
         <p id="view_content">
-          까스통님 고맙습니다. <br>
-          까스통님 고맙습니다. <br>
-          까스통님 고맙습니다. <br>
-          까스통님 고맙습니다. <br>
-          까스통님 고맙습니다. <br>
+          ${rfbView.rfbcontent } <br>
         </p>
-        <div id="comment_box">
-          <img id="title_comment" src="${pageContext.request.contextPath}/resources/img/title_comment.gif">
-          <textarea></textarea>
-          <img id="ok_ripple" src="${pageContext.request.contextPath}/resources/img/ok_ripple.gif">
-        </div>
+        
+        <!-- 댓글 출력란 시작 -->
+        [댓글내용]
+        <table width="750" border="1" cellpadding="0" cellspcing="0">
+        	
+           <c:forEach items="${replylist }" var="replyDto">
+	          <tr>	            
+	            <td class="col2">${replyDto.rrid}</td>
+	            <td class="col3">${replyDto.rrcontent}</td>
+	            <td class="col4">${replyDto.rrdate}</td>	   
+	          	<td><input type="button" value="삭제" onclick="javascript:window.location='replyDelete?rrorinum=${replyDto.rrorinum }&rrid=${replyDto.rrid}&rrnum=${replyDto.rrnum }'"></td>
+	          </tr>
+	          
+        	</c:forEach>
+        	
+        </table>
+        <!-- 댓글 출력란 끝 -->
+        
+        <!-- 댓글 작성하는 곳 시작 -->
+        <form action="replyOk">
+        <input type="hidden" name="rfbnum" value="${rfbView.rfbnum }">
+	        <div id="comment_box">
+	          
+	          <img id="title_comment" src="${pageContext.request.contextPath}/resources/img/title_comment.gif">	         
+	          <textarea name="rrcontent"></textarea>	         
+	          <input type="image" id="ok_ripple" src="${pageContext.request.contextPath}/resources/img/ok_ripple.gif">
+	        </div>
+        </form>
+ 		<!-- 댓글 작성하는 곳 끝 -->
+ 		
         <div id="buttons">
-          <a href="#"><img src="${pageContext.request.contextPath}/resources/img/delete.png"></a>
+          <a href="delete?rfbnum=${rfbView.rfbnum}"><img src="${pageContext.request.contextPath}/resources/img/delete.png"></a>
           <a href="board_list"><img src="${pageContext.request.contextPath}/resources/img/list.png"></a>
           <a href="board_write"><img src="${pageContext.request.contextPath}/resources/img/write.png"></a>
         </div>
+
       </section> <!-- section main 끝 -->
     </main>
     <div class="clear"></div>
