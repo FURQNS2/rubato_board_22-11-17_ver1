@@ -74,6 +74,8 @@
 	    <% }else{ %>
 	    	<br><br><br>
 	    	<h2>&nbsp;&nbsp;${memberId }님 로그인 중</h2>
+	    	&nbsp;&nbsp;
+	    	<input type="button" value="로그아웃" onclick="javascript:window.location='logout'">
 	    <% } %>   
         
         
@@ -108,6 +110,28 @@
         <p id="view_content">
           ${rfbView.rfbcontent } <br>
         </p>
+        
+        <!-- 저장한 파일 불러와서 화면에 보여주기 시작 -->     
+        <c:if test="${filedto != null }">
+	        <p id="file_info">
+	        	<c:choose>
+		        	<c:when test="${filedto.fileextension == 'jpg' or filedto.fileextension == 'png' or filedto.fileextension == 'bmp' }">
+		        		<a href="file_down?rfbnum=${filedto.fileoriname }">
+		        			<img src="${pageContext.request.contextPath}/resources/uploadfiles/${filedto.filename }" width="550" height="300"><br>
+		        		</a>
+		        		<a href="${pageContext.request.contextPath}/resources/uploadfiles/${filedto.filename }" download>
+		        		※첨부파일:${filedto.fileoriname }
+		        		</a>
+		        	</c:when>
+		        	<c:otherwise>
+		        		<a href="${pageContext.request.contextPath}/resources/uploadfiles/${filedto.filename }" download>
+		        			※첨부파일:${filedto.fileoriname }
+		        		</a>
+		        	</c:otherwise>
+	        	</c:choose>
+	        </p>        
+        </c:if>
+        <!-- 저장한 파일 불러오기 끝 -->
         
         <!-- 댓글 출력란 시작 -->
         [댓글내용]

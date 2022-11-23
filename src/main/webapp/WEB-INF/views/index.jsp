@@ -1,5 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -134,32 +137,49 @@
           <article id="freeBoard"> <!-- 자유게시판 -->
             <div class="latest_title">
               <img class="latest_img" src="${pageContext.request.contextPath}/resources/img/latest2.gif">
-              <img class="more" src="${pageContext.request.contextPath}/resources/img/more.gif">
+              <a href="board_list">
+              	<img class="more" src="${pageContext.request.contextPath}/resources/img/more.gif">
+              </a>
               <div class="clear"></div>
             </div>
             <div class="latest_content">
               <img class="image" src="${pageContext.request.contextPath}/resources/img/book_pen.gif">
               <ul class="list">
                 <li>
-                  <div class="subject">까스통님의 선물인 보드카...</div>
-                  <div class="date">2022-09-30</div>
+                  <div class="subject">${freeboard.rfbtitle }</div>
+                  <div class="date">${freeboard.rfbdate }</div>
                   <div class="clear"></div>
                 </li>
+                
+                <!-- 반복문을 통해 게시판에 등록된 최신글 목록 -->
+                <c:forEach items="${latestDtos }" var="freeboard">
                 <li>
-                  <div class="subject">까스통님의 선물인 보드카...</div>
-                  <div class="date">2022-09-30</div>
-                  <div class="clear"></div>
-                </li>
-                <li>
-                  <div class="subject">까스통님의 선물인 보드카...</div>
-                  <div class="date">2022-09-30</div>
-                  <div class="clear"></div>
-                </li>
-                <li>
-                  <div class="subject">까스통님의 선물인 보드카...</div>
-                  <div class="date">2022-09-30</div>
-                  <div class="clear"></div>
-                </li>
+	                <a href="board_view?rfbnum=${freeboard.rfbnum }">
+	                 <div class="subject">
+		               	<c:choose>
+		               		<c:when test="${fn:length(freeboard.rfbtitle) >= 15 }">
+		                  		<c:out value="${fn:substring(freeboard.rfbtitle,0,14)}"></c:out>...		                 	
+		                 		<c:if test="${freeboard.rfbreplycount != 0 }">
+		                 			[${freeboard.rfbreplycount }]
+		                 		</c:if>
+		                 	
+		                 	</c:when>
+		                 	<c:otherwise> 
+		                 		<c:out value="${freeboard.rfbtitle }"></c:out>
+		                 		<c:if test="${freeboard.rfbreplycount != 0 }">
+		                 			[${freeboard.rfbreplycount }]
+		                 		</c:if>
+		                 	</c:otherwise>
+		                 </c:choose> 
+	                  </div> 
+	                 </a>
+	                  <div class="date">	                  	
+		              	<c:out value="${fn:substring(freeboard.rfbdate,0,10)}"></c:out>
+	                  </div>
+	                  <div class="clear"></div>
+	            </li>
+                </c:forEach>
+                
               </ul>
             </div>
           </article> <!-- 자유게시판 끝 -->

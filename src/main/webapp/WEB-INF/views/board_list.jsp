@@ -76,6 +76,8 @@
 	    <% }else{ %>
 	    	<br><br><br>
 	    	<h2>&nbsp;&nbsp;${memberId }님 로그인 중</h2>
+	    	&nbsp;&nbsp;
+	    	<input type="button" value="로그아웃" onclick="javascript:window.location='logout'">
 	    <% } %>    
 	        
 	        
@@ -145,6 +147,10 @@
 	              <c:if test="${boardDto.rfbreplycount > 10 }">
 	              	[${boardDto.rfbreplycount }] Hit!!
 	              </c:if>
+	              <c:if test="${boardDto.filecount != 0}">
+	             	<img src="${pageContext.request.contextPath}/resources/img/file.png" width="15">
+	              </c:if>	
+	             
             </td>
             <td class="col3">${boardDto.rfbname }</td>
             <td class="col4">${boardDto.rfbdate }</td>

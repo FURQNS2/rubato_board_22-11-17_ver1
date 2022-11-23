@@ -2,20 +2,29 @@ package com.sycompany.rubato.controller;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.connector.Response;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.tokens.DocumentEndToken;
 
 import com.sycompany.rubato.dao.IDao;
+import com.sycompany.rubato.dto.FileDto;
 import com.sycompany.rubato.dto.RFBoardDto;
 import com.sycompany.rubato.dto.RReplyDto;
 
@@ -28,12 +37,35 @@ public class HomeController {
 	//private IDao dao = sqlSession.getMapper(IDao.class);
 	
 	@RequestMapping("/")
-	public String HomeIndex() {
+	public String HOME() {
+	
 		return "redirect:index";
 	}
 	
 	@RequestMapping("/index")
-	public String index() {
+	public String index(Model model) {
+		
+		IDao dao = sqlSession.getMapper(IDao.class);
+		
+		//어레이리스트의 상위인 리스트를 부른다.
+		List<RFBoardDto> boardDtos = dao.rfblist();
+		
+		boardDtos = boardDtos.subList(0, 4); 
+		int boardSize = boardDtos.size(); //전체글의 개수
+		
+		// 게시글의 수가 4보다 작을 때
+		if(boardSize > 4) {
+			boardDtos = boardDtos.subList(0, 4);			
+		}
+		
+		model.addAttribute("latestDtos", boardDtos);	
+		
+//		model.addAttribute("freeboard01", boardDtos.get(0));
+//		model.addAttribute("freeboard02", boardDtos.get(1));
+//		model.addAttribute("freeboard03", boardDtos.get(2));
+//		model.addAttribute("freeboard04", boardDtos.get(3));
+		
+		
 		return "index";
 	}
 	
@@ -70,12 +102,22 @@ public class HomeController {
 		// 글 내용보는 select문 사용
 		RFBoardDto rfboardDto2 = dao.rfboardView(rfbnum);
 		
-		model.addAttribute("rfbView", rfboardDto2);
-		
 		String rrorinum = request.getParameter("rfbnum");
 		ArrayList<RReplyDto> replyDtos = dao.rrlist(rrorinum);
-		model.addAttribute("replylist",replyDtos);
 		
+		// 파일 주소 불러오기
+		FileDto dto = dao.getFileInfo(rfbnum);
+		
+		
+		model.addAttribute("rfbView", rfboardDto2); // 작성한 모든 글 불러오기
+		model.addAttribute("replylist",replyDtos); // 댓글 불러오기
+		
+		String extension = dto.getFileextension();
+		
+		if(extension != null) {	
+			model.addAttribute("filedto",dto);
+		}
+			
 		return "board_view";
 	}
 	
@@ -164,8 +206,8 @@ public class HomeController {
 		return "redirect:index";
 	}
 	
-	@RequestMapping("/writeOk")
-	public String writeOk(HttpServletRequest request, HttpSession session) {
+	@RequestMapping(value = "/writeOk", method=RequestMethod.POST)
+	public String writeOk(HttpServletRequest request, HttpSession session, @RequestPart MultipartFile files) throws IllegalStateException, IOException {
 
 		IDao dao = sqlSession.getMapper(IDao.class);
 		
@@ -176,8 +218,58 @@ public class HomeController {
 		String boardTitle = request.getParameter("rfbtitle");
 		String boardContent = request.getParameter("rfbcontent");
 		
-		dao.rfbwrite(boardName, boardTitle, boardContent, sessionId);
 		
+		
+		
+		if(files.isEmpty()) { // 파일 비어있음 Empty-빈, 비어있는
+			dao.rfbwrite(boardName, boardTitle, boardContent, sessionId,0);	
+		} else {
+			dao.rfbwrite(boardName, boardTitle, boardContent, sessionId,1);
+			
+			ArrayList<RFBoardDto> latestBoard = dao.boardLatestInfo(sessionId);
+			RFBoardDto dto = latestBoard.get(0);			
+			int rfbnum = dto.getRfbnum();
+			
+			
+			// 파일 첨부
+			String fileOriName= files.getOriginalFilename(); // 첨부된 파일의 원래 이름
+			
+			//내가 만든 파일이름에 확장자를 빼냄
+			//toLowerCase() => 확장자 추출 후 소문자로 강제 변경
+			String fileExtension = FilenameUtils.getExtension(fileOriName).toLowerCase();
+			
+			File destinationFile; // java.io 절대 톰캣이랑 헷갈리면 안 됨!!
+			
+			
+			String destinationFileName; //실제 서버에 저장된 파일의 변경된 이름이 저장될 변수선언
+			
+			//첨부된 파일이 저장될 서버의 실제 폴더 경로
+			String fileurl = "E:/SpringBoot_workspace/RubatoProject_22-11-17/src/main/resources/static/uploadfiles/";
+			
+			
+			
+			
+			do {
+			//랜덤문자 만들기 보통 4의 배수로 간다(16)
+			// 랜덤문자.확장자명 를 만든다. 잘라낸 확장자명을 마지막에 넣는다. 
+			destinationFileName = RandomStringUtils.randomAlphabetic(32) + "." + fileExtension;
+			
+			//열심히 만든 랜덤 문자들을 이어줄 file클래스에 넣어줌
+			destinationFile = new File(fileurl + destinationFileName);
+			} while(destinationFile.exists());  //exists은 bloolean형태이다.
+			//혹시 같은 이름의 파일이름이 존재하는지 확인
+		
+
+			
+			//업로드할 수 있게 컴퓨터 파일이 열리게 만듦
+			destinationFile.getParentFile().mkdir();
+			//업로드된 파일이 지정한 폴더로 이동 완료!
+			files.transferTo(destinationFile);
+			
+			dao.fileInfoInsert(rfbnum, fileOriName, destinationFileName, fileExtension, fileurl);
+			
+		}
+	
 		return "redirect:board_list";
 	}
 	
@@ -273,7 +365,63 @@ public class HomeController {
 	}
 	
 	@RequestMapping("/search_list")
-	public String search_list() {
+	public String search_list(HttpServletRequest request, Model model) {
+		
+		IDao dao = sqlSession.getMapper(IDao.class);
+		
+		
+		//초기값 설정
+		ArrayList<RFBoardDto> boarddtos = null;  
+		
+		String searchKey = request.getParameter("searchKey");
+		String searchOption = request.getParameter("searchOption");
+		
+		if(searchOption.equals("title")) {
+			boarddtos = dao.rfbSearchTitleList(searchKey);			
+			
+		} else if(searchOption.equals("content")) {
+			boarddtos = dao.rfbSearchContentList(searchKey);			
+		
+		} else if(searchOption.equals("writer")) {
+			boarddtos = dao.rfbSearchWriterList(searchKey);			
+					
+		} else {
+			model.addAttribute("없는 결과입니다.",null);
+		}
+		
+		model.addAttribute("boardList",boarddtos);
+		//검색 결과 게시물의 개수 반환
+		model.addAttribute("boardCount",boarddtos.size());
+		
+		
 		return "board_list";
 	}
+	
+	
+	@RequestMapping("/file_down")
+	public String file_down(HttpServletRequest request, HttpServletResponse response) {
+		
+		String rfbnum = request.getParameter("rfbnum");
+		
+		IDao dao = sqlSession.getMapper(IDao.class);
+		FileDto fileDto = dao.getFileInfo(rfbnum);
+		
+		String filename= fileDto.getFilename();
+		
+		PrintWriter out;
+		
+		try {
+			response.setContentType("text/html;charset=utf=8");
+			out = response.getWriter();
+			out.println("<script>window.location='/resources/uploadfiles/'"+ filename + "</script>");
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		return "redirect:board_list";
+	}
+	
+	
 }

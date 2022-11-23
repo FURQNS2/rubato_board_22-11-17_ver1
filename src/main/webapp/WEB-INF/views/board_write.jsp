@@ -55,6 +55,8 @@
 	    <% }else{ %>
 	    	<br><br><br>
 	    	<h2>&nbsp;&nbsp;${memberId }님 로그인 중</h2>
+	    	&nbsp;&nbsp;
+	    	<input type="button" value="로그아웃" onclick="javascript:window.location='logout'">
 	    <% } %>   
         
       </article> <!-- login box 끝 -->
@@ -81,7 +83,7 @@
         <h2 id="board_title">자유게시판</h2>
         <div id="write_title"><h2>글쓰기</h2></div>
         
-        <form action="writeOk">
+        <form action="writeOk" method="post" enctype="multipart/form-data">
 	        <table>
 	          <tr id="name">
 	            <td class="col1">이름</td>
@@ -94,11 +96,14 @@
 	          <tr id="content">
 	            <td class="col1">내용</td>
 	            <td class="col2"><textarea name="rfbcontent"></textarea></td>
+	          
+	          <!-- 파일 업로드 시작 -->
 	          </tr>
 	          <tr id="upload">
 	            <td class="col1">업로드 파일</td>
 	            <td class="col2"><input type="file" name="files"></td>
 	          </tr>
+	          <!-- 파일 업로드 끝 -->
 	        </table>
 	        <div id="buttons">
 	          <input type="image" src="${pageContext.request.contextPath}/resources/img/ok.png">

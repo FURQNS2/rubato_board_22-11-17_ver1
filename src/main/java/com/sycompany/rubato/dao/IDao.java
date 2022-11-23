@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.sycompany.rubato.dto.FileDto;
 import com.sycompany.rubato.dto.RFBoardDto;
 import com.sycompany.rubato.dto.RReplyDto;
 
@@ -16,7 +17,7 @@ public interface IDao {
 	public int checkUserIdAndPw(String mid, String mpw);
 	
 	//글쓰기
-	public void rfbwrite(String rfbname, String rfbtitle, String rfbcontent,String rfbuserid);
+	public void rfbwrite(String rfbname, String rfbtitle, String rfbcontent,String rfbuserid, int filecount);
 	
 	//글 목록
 	public ArrayList<RFBoardDto> rfblist();
@@ -46,5 +47,13 @@ public interface IDao {
 	public ArrayList<RFBoardDto> rfbSearchTitleList(String searchKey); // 제목
 	public ArrayList<RFBoardDto> rfbSearchContentList(String searchKey); // 글내용
 	public ArrayList<RFBoardDto> rfbSearchWriterList(String searchKey); //글쓴이
+	
+	//파일 업로드 관련
+	public void fileInfoInsert(int boardnum, String fileoriname, String filename, String fileextension, String fileurl);
+	//현재 파일이 첨부된 글을 쓴 아이디로 검색된 글 목록 => sql문에서 하는 것이 더 확실하나 아직 배우지 않아서 이것으로 대체한다.
+	public ArrayList<RFBoardDto> boardLatestInfo(String	rfbuserid);
+	//파일 불러오기
+	public FileDto getFileInfo(String boardnum);
+	
 }
 

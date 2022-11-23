@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RMemberDto {
 
-	private String mid;
-	private String mpw;
-	private String mname;
-	private String memail;
-	private String mdate;
+	private String mid;   //멤버 아이디
+	private String mpw;   // 멤버의 비밀번호
+	private String mname; // 멤버 이름
+	private String memail; // 멤버 이메일
+	private String mdate;  //멤버 가입일자
 }
 
